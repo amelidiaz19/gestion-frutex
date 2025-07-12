@@ -1,0 +1,166 @@
+<app-table
+  [title]="'Pedidos'"
+  [items]="pedidos"
+  [columns]="columns"
+  [totalItems]="totalItems"
+  [currentPage]="currentPage"
+  [itemsPerPage]="itemsPerPage"
+  [totalPages]="totalPages"
+  [loading]="loading"
+  [loadingText]="'Cargando pedidos...'"
+  [showSearch]="true"
+  [searchPlaceholder]="'Buscar por N° pedido, cliente o DNI...'"
+  [customActionConfig]="customActionConfig"
+  (pageChange)="onPageChange($event)"
+  (searchTermChange)="onSearch($event)"
+  (viewItem)="openModal($event)">
+  <ng-template #idTemplate let-item>
+    {{ item.id }}
+  </ng-template>
+
+  <ng-template #fechaTemplate let-item>
+    {{ item.fecha | date:'dd/MM/yyyy HH:mm' }}
+  </ng-template>
+
+  <ng-template #clienteTemplate let-item>
+    {{ item.cliente.nombre }} {{ item.cliente.apellido }}
+  </ng-template>
+
+  <ng-template #estadoTemplate let-item>
+    <span [class]="getEstadoClass(item.estado)" class="px-2 py-1 rounded-md text-xs font-medium">
+      {{ getEstadoText(item.estado) }}
+    </span>
+  </ng-template>
+
+  <ng-template #totalTemplate let-item>
+    S/ {{ item.total }}
+  </ng-template>
+
+  <ng-template #accionTemplate let-item>
+      <select 
+        [ngModel]="item.estado"
+        (ngModelChange)="updateEstado(item.id, $event)"
+        class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-1.5"
+      >
+        <option *ngFor="let estado of estadoOptions" [value]="estado">
+          {{ getEstadoText(estado) }}
+        </option>
+      </select>
+  </ng-template>
+</app-table>
+
+<div *ngIf="selectedPedido" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" (click)="closeModal()"></div>
+
+    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full dark:bg-gray-800">
+      <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
+            Detalles del Pedido #{{selectedPedido.id}}
+          </h3>
+          <button type="button" (click)="closeModal()" class="text-gray-400 hover:text-gray-500">
+            <span class="sr-only">Close</span>
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Left Column -->
+          <div class="space-y-4">
+            <!-- Cliente Info -->
+            <div class="border dark:border-gray-700 rounded-lg">
+              <button class="w-full px-4 py-2 text-left font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 rounded-t-lg" (click)="toggleSection('cliente')">
+                <div class="flex items-center justify-between">
+                  <span>Información del Cliente</span>
+                  <svg class="w-5 h-5 transition-transform" [class.rotate-180]="openSections.cliente" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </button>
+              <div class="p-4" *ngIf="openSections.cliente">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  Nombres y Apellidos: {{selectedPedido.cliente.nombre}} {{selectedPedido.cliente.apellido}}<br>
+                  DNI: {{selectedPedido.cliente.dni}}<br>
+                  Email: {{selectedPedido.cliente.email}}<br>
+                  Teléfono: {{selectedPedido.cliente.telefono}}
+                </p>
+              </div>
+            </div>
+
+            <!-- Delivery Info -->
+            <div class="border dark:border-gray-700 rounded-lg">
+              <button class="w-full px-4 py-2 text-left font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 rounded-t-lg" (click)="toggleSection('entrega')">
+                <div class="flex items-center justify-between">
+                  <span>Información de Entrega y Pago</span>
+                  <svg class="w-5 h-5 transition-transform" [class.rotate-180]="openSections.entrega" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </button>
+              <div class="p-4" *ngIf="openSections.entrega">
+                <div class="mb-4">
+                  <h5 class="font-medium text-gray-900 dark:text-white mb-2">Método de Pago</h5>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                    {{selectedPedido.metodoPago | titlecase}}
+                  </p>
+                </div>
+                <div>
+                  <h5 class="font-medium text-gray-900 dark:text-white mb-2">Entrega</h5>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                    Tipo: {{selectedPedido.tipoEntrega | titlecase}}
+                  </p>
+                  <div *ngIf="selectedPedido.tipoEntrega === 'delivery'" class="mt-2">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                      Dirección: {{selectedPedido.direccion.calle}} {{selectedPedido.direccion.numero}}<br>
+                      Distrito: {{selectedPedido.direccion.distrito}}<br>
+                      Referencia: {{selectedPedido.direccion.referencia}}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div class="space-y-4">
+            <!-- Products Info -->
+            <div class="border dark:border-gray-700 rounded-lg">
+              <button class="w-full px-4 py-2 text-left font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 rounded-t-lg" (click)="toggleSection('productos')">
+                <div class="flex items-center justify-between">
+                  <span>Productos</span>
+                  <svg class="w-5 h-5 transition-transform" [class.rotate-180]="openSections.productos" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </button>
+              <div class="p-4" *ngIf="openSections.productos">
+                <div class="space-y-4">
+                  <div *ngFor="let item of selectedPedido.items" class="border-b dark:border-gray-700 last:border-0 pb-4 last:pb-0">
+                    <p class="font-medium text-gray-900 dark:text-white">{{item.nombre}}</p>
+                    <div class="grid grid-cols-2 gap-2 mt-2 text-sm text-gray-500 dark:text-gray-400">
+                      <p>Cantidad: {{item.cantidad}}</p>
+                      <p>Tipo: {{item.tipo_venta | titlecase}}</p>
+                      <p>Precio: {{item.precio_unitario | currency:'S/. '}}</p>
+                      <p>Subtotal: {{item.subtotal | currency:'S/. '}}</p>
+                    </div>
+                  </div>
+                  <div class="pt-4 border-t dark:border-gray-700">
+                    <p class="text-lg font-bold text-gray-900 dark:text-white">
+                      Total: {{selectedPedido.total | currency:'S/. '}}
+                    </p>
+                    <p *ngIf="selectedPedido.notas" class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                      Notas: {{selectedPedido.notas}}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>

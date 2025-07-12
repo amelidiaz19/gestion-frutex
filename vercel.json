@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/dni",
+      "destination": "/api/dni.js"
+    },
+    {
+      "source": "/api/ruc",
+      "destination": "/api/ruc.js"
+    }
+  ]
+}

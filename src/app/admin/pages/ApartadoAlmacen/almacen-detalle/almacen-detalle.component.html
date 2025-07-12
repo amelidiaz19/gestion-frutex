@@ -1,0 +1,47 @@
+<app-table
+  [title]="'Historial de Ingresos al Almacén'"
+  [items]="historial"
+  [columns]="columns"
+  [totalItems]="totalItems"
+  [currentPage]="currentPage"
+  [itemsPerPage]="itemsPerPage"
+  [totalPages]="totalPages"
+  [loading]="loading"
+  [loadingText]="'Cargando historial...'"
+  [showSearch]="true"
+  [searchPlaceholder]="'Buscar por código o nombre...'"
+  (pageChange)="onPageChange($event)"
+  (searchTermChange)="onSearch($event)"
+>
+  <ng-template #fechaTemplate let-item>
+    {{item.fecha_ingreso | date:'dd/MM/yyyy'}}
+  </ng-template>
+
+  <ng-template #codigoTemplate let-item>
+    {{item.producto_codigo}}
+  </ng-template>
+
+  <ng-template #productoTemplate let-item>
+    {{item.producto_nombre}}
+  </ng-template>
+
+  <ng-template #cajasTemplate let-item>
+    {{item.cantidad_cajas}}
+  </ng-template>
+
+  <ng-template #unidadesCajaTemplate let-item>
+    {{item.cantidad_por_caja}}
+  </ng-template>
+
+  <ng-template #precioTemplate let-item>
+    $ {{item.precio_unitario}}
+  </ng-template>
+
+  <ng-template #totalTemplate let-item>
+    $ {{item.total_valor}}
+  </ng-template>
+
+  <ng-template #empleadoTemplate let-item>
+    {{item.empleado_nombre}} {{item.empleado_apellido}}
+  </ng-template>
+</app-table>

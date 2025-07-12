@@ -1,0 +1,161 @@
+<section>
+    <div>
+
+        <button (click)="onCreateClick()" 
+            class="w-full mb-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow">
+            + Nuevo Cliente
+        </button>
+        
+        <app-table
+            [title]="'Clientes'"
+            [items]="clientes"
+            [columns]="columns"
+            [totalItems]="totalItems"
+            [currentPage]="currentPage"
+            [itemsPerPage]="10"
+            [totalPages]="totalPages"
+            [loading]="loading"
+            [loadingText]="'Cargando clientes...'"
+            [showSearch]="true"
+            [searchPlaceholder]="'Buscar por DNI, nombre o apellido...'"
+            [customActionConfig]="customActionConfig"
+            (pageChange)="onPageChange($event)"
+            (searchTermChange)="onSearch($event)"
+            (viewItem)="onViewClick($event)">
+            
+            <!-- Templates for each column -->
+            <ng-template #dniTemplate let-item>
+                {{ item.dni_cliente }}
+            </ng-template>
+
+            <ng-template #nombreTemplate let-item>
+                {{ item.nombre }}
+            </ng-template>
+
+            <ng-template #apellidoTemplate let-item>
+                {{ item.apellido }}
+            </ng-template>
+
+            <ng-template #emailTemplate let-item>
+                {{ item.email }}
+            </ng-template>
+
+            <ng-template #telefonoTemplate let-item>
+                {{ item.telefono }}
+            </ng-template>
+
+            <ng-template #distritoTemplate let-item>
+                {{ item.distrito }}
+            </ng-template>
+        </app-table>
+    </div>
+</section>
+
+<app-popup 
+    [isVisible]="showPopup"
+    [title]="isEditing ? 'Editar Cliente' : 'Crear Nuevo Cliente'"
+    [contentTemplate]="clienteFormTemplate"
+    [context]="{ item: isEditing ? selectedCliente : newCliente }"
+    (closePopup)="onClosePopup()"
+    [popupClass]="'max-w-4xl w-full'">
+</app-popup>
+
+<ng-template #clienteFormTemplate let-item="item">
+    <div class="p-5 space-y-3 bg-white dark:bg-gray-800">
+        <form (ngSubmit)="onSubmit()" class="space-y-2">
+            <!-- Basic Information -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-900 dark:text-white">DNI*</label>
+                    <input type="text" [(ngModel)]="item.dni_cliente" name="dni" [readonly]="isEditing" required
+                        maxlength="11"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600">
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-900 dark:text-white">Nombre*</label>
+                    <input type="text" [(ngModel)]="item.nombre" name="nombre" required
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600">
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-900 dark:text-white">Apellido*</label>
+                    <input type="text" [(ngModel)]="item.apellido" name="apellido" required
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600">
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-900 dark:text-white">Teléfono*</label>
+                    <input type="text" [(ngModel)]="item.telefono" name="telefono" required
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600">
+                </div>
+            </div>
+
+            <div *ngIf="isEditing">
+                <div class="space-y-2 mb-3">
+                    <label class="block text-sm font-medium text-gray-900 dark:text-white">Email</label>
+                    <div class="relative">
+                        <input type="email" [(ngModel)]="item.email" name="email"
+                            [class]="'bg-gray-50 border text-gray-900 text-sm rounded-lg block w-full p-2 ' + 
+                            (emailError ? 'border-red-500 focus:ring-red-500 focus:border-blue-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500')">
+                    </div>
+                    <p *ngIf="emailError" class="mt-1 text-sm text-red-600">
+                        {{ errorMessage }}
+                    </p>
+                </div>
+
+                <!-- Address Information -->
+                <div class="grid grid-cols-4 gap-3 mb-3">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-900 dark:text-white">Calle</label>
+                        <input type="text" [(ngModel)]="item.calle" name="calle"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-900 dark:text-white">Número</label>
+                        <input type="text" [(ngModel)]="item.numero" name="numero"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-900 dark:text-white">Distrito</label>
+                        <input type="text" [(ngModel)]="item.distrito" name="distrito"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-900 dark:text-white">Referencia</label>
+                        <input type="text" [(ngModel)]="item.referencia" name="referencia"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-900 dark:text-white">Método de Pago</label>
+                        <select [(ngModel)]="item.metodo_pago" name="metodo_pago"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600">
+                            <option value="efectivo">Efectivo</option>
+                            <option value="tarjeta">Tarjeta</option>
+                            <option value="transferencia">Transferencia</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-900 dark:text-white">Tipo de Entrega</label>
+                        <select [(ngModel)]="item.tipo_entrega" name="tipo_entrega"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600">
+                            <option value="delivery">Delivery</option>
+                            <option value="recojo">Recojo en Tienda</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                <button type="button" (click)="onClosePopup()"
+                    class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    {{ isEditing ? 'Guardar Cambios' : 'Crear Cliente' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</ng-template>

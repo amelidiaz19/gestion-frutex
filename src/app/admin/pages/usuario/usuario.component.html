@@ -1,0 +1,121 @@
+<section>
+    <div>
+        <button *ngIf="currentUser?.dni === '76124994'" 
+            (click)="onCreateClick()" 
+            class="w-full mb-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow">
+            + Nuevo Usuario
+        </button>
+
+
+        <app-table
+            [title]="'Todos los empleados'"
+            [items]="(Usuarios$ | async) ?? []"
+            [columns]="columns"
+            [totalItems]="totalItems"
+            [currentPage]="currentPage"
+            [itemsPerPage]="itemsPerPage"
+            [totalPages]="totalPages"
+            [loading]="loading"
+            [loadingText]="'Cargando empleados...'"
+            [showSearch]="false"
+            (pageChange)="onPageChange($event)">
+            
+            <!-- Templates for each column -->
+            <ng-template #idTemplate let-item>
+                {{ item.id }}
+            </ng-template>
+
+            <ng-template #nombreTemplate let-item>
+                {{ item.nombre }}
+            </ng-template>
+
+            <ng-template #apellidoTemplate let-item>
+                {{ item.apellido }}
+            </ng-template>
+
+            <ng-template #correoTemplate let-item>
+                {{ item.correo }}
+            </ng-template>
+
+            <ng-template #ultimaConexionTemplate let-item>
+                {{ item.ultima_conexion | date:'medium' }}
+            </ng-template>
+
+            <!-- Actions -->
+            <div actions>
+                <div class="flex items-center space-x-4">
+                    <button type="button" class="py-2 px-3 flex items-center text-sm font-medium text-center text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+                        <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z"/>
+                        </svg>
+                        Editar
+                    </button>
+                    <button type="button" class="flex items-center text-red-700 hover:text-white border border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-3 py-2 text-center dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-900">
+                        <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
+                        </svg>
+                        Eliminar
+                    </button>
+                </div>
+            </div>
+        </app-table>
+    </div>
+</section>
+
+
+<app-popup 
+    [isVisible]="showPopup"
+    [title]="'Registrar Nuevo Usuario'"
+    [contentTemplate]="usuarioFormTemplate"
+    [context]="{ item: newUsuario }"
+    (closePopup)="onClosePopup()"
+    [popupClass]="'max-w-xl w-full'">
+</app-popup>
+
+<ng-template #usuarioFormTemplate let-item="item">
+    <div class="p-6 space-y-4 bg-white dark:bg-gray-800">
+        <form (ngSubmit)="onSubmit()" class="space-y-4">
+            <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-900 dark:text-white">DNI Empleado*</label>
+                <input type="text" [(ngModel)]="item.dni_empleado" name="dni_empleado" required
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-900 dark:text-white">Nombre*</label>
+                    <input type="text" [(ngModel)]="item.nombre" name="nombre" required
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-900 dark:text-white">Apellido*</label>
+                    <input type="text" [(ngModel)]="item.apellido" name="apellido" required
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-900 dark:text-white">Email*</label>
+                <input type="email" [(ngModel)]="item.email" name="email" required
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-900 dark:text-white">Contraseña*</label>
+                <input type="password" [(ngModel)]="item.passwd" name="passwd" required
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                <button type="button" (click)="onClosePopup()"
+                    class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+                    Registrar Usuario
+                </button>
+            </div>
+        </form>
+    </div>
+</ng-template>

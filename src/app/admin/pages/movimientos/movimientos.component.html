@@ -1,0 +1,150 @@
+<div class="p-4">
+    <app-table
+      [title]="'Movimientos de Ventas'"
+      [items]="ventas"
+      [columns]="columns"
+      [loading]="loading"
+      [currentPage]="currentPage"
+      [totalPages]="totalPages"
+      [totalItems]="totalItems"
+      [itemsPerPage]="10"
+      [showSearch]="true"
+      [searchPlaceholder]="'Buscar por ID venta o datos del cliente...'"
+      (searchTermChange)="onSearch($event)"
+      [customActionConfig]="customActionConfig"
+      (pageChange)="loadVentas($event)"
+      (viewItem)="verDetalles($event.id_venta)"
+
+    >
+
+      <ng-template #idTemplate let-venta>
+        <span class="font-medium">{{venta.id_venta}}</span>
+      </ng-template>
+
+      <ng-template #fechaTemplate let-venta>
+        {{venta.fecha_venta | date:'dd/MM/yyyy HH:mm'}}
+      </ng-template>
+
+      <ng-template #clienteTemplate let-venta>
+        <span class="font-medium">{{venta.nombre_cliente}}</span>
+      </ng-template>
+  
+      <ng-template #tipoTemplate let-venta>
+        <span [ngClass]="{
+          'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': venta.tipo_venta === 'presencial',
+          'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300': venta.tipo_venta === 'web'
+        }" class="px-2.5 py-0.5 rounded-full text-xs font-medium">
+          {{venta.tipo_venta}}
+        </span>
+      </ng-template>
+  
+      <ng-template #estadoTemplate let-venta>
+        <span [ngClass]="{
+          'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': venta.estado === 'completada',
+          'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300': venta.estado === 'pendiente_envio',
+          'bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-300': venta.estado === 'pendiente_recojo'
+        }" class="px-2.5 py-0.5 rounded-full text-xs font-medium">
+          {{venta.estado}}
+        </span>
+      </ng-template>
+  
+      <ng-template #totalTemplate let-venta>
+        <span class="font-medium text-green-600 dark:text-green-400">S/ {{venta.total}}</span>
+      </ng-template>
+  
+      <ng-template #metodosTemplate let-venta>
+        <div class="flex gap-1 flex-wrap">
+          <span *ngFor="let metodo of venta.metodos_pago.split(',')" 
+                class="bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 px-2 py-0.5 rounded-full text-xs font-medium">
+            {{metodo}}
+          </span>
+        </div>
+      </ng-template>
+    </app-table>
+
+<div *ngIf="showDetailsPopup" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+            Detalles de Venta #{{selectedVenta?.id_venta}} - {{selectedVenta?.fecha_venta | date:'dd/MM/yyyy HH:mm'}}
+          </h3>
+          <button (click)="showDetailsPopup = false" 
+                  class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+  
+        <div class="space-y-6">
+            <!-- Cliente Info and Shipping Address -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <!-- Cliente Info -->
+                  <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <h4 class="font-semibold mb-2 text-gray-900 dark:text-white">Información del Cliente</h4>
+                    <div class="space-y-2">
+                      <p><span class="font-medium">Nombre:</span> {{selectedVenta?.nombre_cliente}}</p>
+                      <p><span class="font-medium">DNI:</span> {{selectedVenta?.dni_cliente}}</p>
+                      <p><span class="font-medium">Email:</span> {{selectedVenta?.email_cliente}}</p>
+                      <p><span class="font-medium">Teléfono:</span> {{selectedVenta?.telefono}}</p>
+                    </div>
+                  </div>
+      
+                  <!-- Dirección de Envío (solo si es pendiente_envio) -->
+                  <div *ngIf="selectedVenta?.estado === 'pendiente_envio'" class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <h4 class="font-semibold mb-2 text-gray-900 dark:text-white">Dirección de Envío</h4>
+                    <div class="space-y-2">
+                      <p><span class="font-medium">Calle:</span> {{selectedVenta?.calle}} {{selectedVenta?.numero}}</p>
+                      <p><span class="font-medium">Distrito:</span> {{selectedVenta?.distrito}}</p>
+                      <p><span class="font-medium">Referencia:</span> {{selectedVenta?.referencia}}</p>
+                    </div>
+                  </div>
+            </div>
+  
+           <!-- Productos -->
+           <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+            <h4 class="font-semibold mb-2 text-gray-900 dark:text-white">Productos</h4>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm text-left">
+                <thead class="text-xs uppercase">
+                  <tr>
+                    <th class="px-4 py-2">Código</th>
+                    <th class="px-4 py-2">Producto</th>
+                    <th class="px-4 py-2">Cantidad</th>
+                    <th class="px-4 py-2">Precio Unit.</th>
+                    <th class="px-4 py-2">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let producto of selectedVenta?.productos">
+                    <td class="px-4 py-2">{{producto.codigo}}</td>
+                    <td class="px-4 py-2">{{producto.nombre}}</td>
+                    <td class="px-4 py-2">{{producto.cantidad}}</td>
+                    <td class="px-4 py-2">S/ {{producto.precio_unitario}}</td>
+                    <td class="px-4 py-2">S/ {{producto.subtotal}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+           </div>
+  
+          <!-- Pagos -->
+          <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+            <h4 class="font-semibold mb-2 text-gray-900 dark:text-white">Pagos</h4>
+            <div class="space-y-2">
+              <div *ngFor="let pago of selectedVenta?.pagos" 
+                   class="flex justify-between items-center">
+                <span class="capitalize">{{pago.metodo_pago}}</span>
+                <span>S/ {{pago.monto}}</span>
+              </div>
+              <div class="border-t pt-2 flex justify-between items-center font-bold">
+                <span>Total</span>
+                <span>S/ {{selectedVenta?.total}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

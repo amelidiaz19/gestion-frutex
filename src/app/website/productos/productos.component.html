@@ -1,0 +1,172 @@
+<section class="space-y-4">
+    <app-table
+        [title]="'Todos los productos'"
+        [items]="(productos$ | async) ?? []"
+        [columns]="columns"
+        [totalItems]="totalProducts"
+        [currentPage]="currentPage"
+        [itemsPerPage]="itemsPerPage"
+        [totalPages]="totalPages"
+        [loading]="loading"
+        [loadingText]="'Cargando productos...'"
+        [showCheckbox]="true"
+        [showSearch]="true"
+        [searchPlaceholder]="'Buscar productos...'"
+        [(searchTerm)]="searchTerm"
+        (searchTermChange)="onSearchChange($event)"
+        (pageChange)="onPageChange($event)"
+    >
+        <ng-template #codigoTemplate let-item>
+            {{item.codigo}}
+        </ng-template>
+
+        <ng-template #nombreTemplate let-item>
+            {{item.nombre}}
+        </ng-template>
+
+        <ng-template #descripcionTemplate let-item>
+            <div class="flex items-center mr-3">
+                <span [title]="item.descripcion">
+                    <span [innerHTML]="item.descripcion | Pipe"></span>
+                </span>
+            </div>
+        </ng-template>
+
+        <ng-template #cajasTemplate let-item>
+            {{item.cajas}}
+        </ng-template>
+
+        <ng-template #cantidadXcajaTemplate let-item>
+            {{item.cantidad_por_caja}}
+        </ng-template>
+
+        <ng-template #stockTemplate let-item>
+            <div
+                class="flex items-center cursor-pointer"
+            >
+                <div
+                    [ngClass]="item.cajas == 0? 'bg-red-500' : 'bg-green-500'"
+                    class="h-2.5 w-2.5 rounded-full inline-block mr-2"
+                >
+                </div>
+                {{item.stock_actual}}
+            </div>
+        </ng-template>
+
+        <ng-template #editarTemplate let-item>
+            <button type="button" (click)="openProductModal(item)" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Editar</button>
+        </ng-template>
+        
+    </app-table>
+</section>
+
+<!-- Product Details Popup -->
+<app-popup 
+    [isVisible]="showProductModal"
+    [title]="'Editar Producto'"
+    [contentTemplate]="productDetailsTemplate"
+    [context]="{ item: selectedProduct }"
+    (closePopup)="closeProductModal()"
+    [popupClass]="'max-w-6xl w-full'"
+>
+</app-popup>
+
+<ng-template #productDetailsTemplate let-item="item">
+    <div *ngIf="item" class="p-6 space-y-6 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+        <form [formGroup]="productoForm" (ngSubmit)="onSubmit()" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Left Column -->
+            <div class="space-y-6">
+                <!-- Product Information Section -->
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">ID:</label>
+                            <input type="number" formControlName="id"
+                                class="bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 cursor-not-allowed">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Código:</label>
+                            <input type="text" formControlName="codigo"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nombre:</label>
+                        <input type="text" formControlName="nombre"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                    </div>
+                </div>
+    
+                <!-- Description Section -->
+                <div class="space-y-2">
+                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Descripción:</label>
+                    <textarea rows="3" formControlName="descripcion"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"></textarea>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Estado:</label>
+                    <select formControlName="estado"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">Inactivo</option>
+                    </select>
+                </div>
+
+                <!-- Pricing Section -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Precios</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Precio (Dolares):</label>
+                            <input type="number" step="0.01" formControlName="precio_dolares"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Porcentaje Ganancia (%):</label>
+                            <input type="number" step="0.01" formControlName="porcentaje_ganancia"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Right Column -->
+            <div class="space-y-6">
+                <!-- SEO Section -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">SEO y Metadata</h3>
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="space-y-2">
+                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">URL Slug:</label>
+                            <input type="text" formControlName="url_slug"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Keywords:</label>
+                            <input type="text" formControlName="keywords"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- Image Section -->
+                <div class="space-y-4">
+                    <app-imagen [productoId]="selectedProduct.id"></app-imagen>
+                </div>
+            </div>
+    
+            <!-- Submit Button - Full Width -->
+            <div class="col-span-full flex justify-end space-x-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <button type="button" (click)="closeProductModal()"
+                    class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</ng-template>
