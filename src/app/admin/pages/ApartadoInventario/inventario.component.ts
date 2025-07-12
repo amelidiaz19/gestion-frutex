@@ -109,14 +109,13 @@ export class InventarioComponent implements OnInit {
     if (url?.startsWith('http')) {
       return url;
     }
+    console.log('Image URL:', `${environment.IMG_URL}/${url}`);
     return `${environment.IMG_URL}/uploads/${url}`;
   }
 
   handleImageError(event: any) {
-    event.target.src = 'https://importaciones-sarmiento.com/error.svg';
+    event.target.src = 'error.svg';
   }
-
-  
 
   loadProducts() {
     this.loading = true;

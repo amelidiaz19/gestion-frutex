@@ -45,7 +45,7 @@ export class ImagenComponent implements OnInit{
   }
 
   handleImageError(event: any) {
-    event.target.src = 'https://importaciones-sarmiento.com/error.svg';
+    event.target.src = 'error.svg';
   }
 
   onFileSelected(event: any) {
