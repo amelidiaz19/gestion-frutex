@@ -13,6 +13,7 @@ export class ImagenService {
   constructor(private http: HttpClient) {}
 
   getProductImages(productId: number): Observable<any> {
+    console.log('Fetching images for product ID:', productId);
     return this.http.get(`${this.apiUrl}/producto/${productId}`);
   }
 

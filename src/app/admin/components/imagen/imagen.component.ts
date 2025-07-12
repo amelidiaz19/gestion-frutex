@@ -41,7 +41,7 @@ export class ImagenComponent implements OnInit{
     if (url?.startsWith('http')) {
       return url;
     }
-    return `${environment.API_URL}/${url}`;
+    return `${environment.API_URL}${url}`;
   }
 
   handleImageError(event: any) {

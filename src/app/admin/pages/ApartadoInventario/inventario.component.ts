@@ -109,7 +109,7 @@ export class InventarioComponent implements OnInit {
     if (url?.startsWith('http')) {
       return url;
     }
-    return `${environment.IMG_URL}/uploads/img/${url}`;
+    return `${environment.IMG_URL}/uploads/${url}`;
   }
 
   handleImageError(event: any) {
